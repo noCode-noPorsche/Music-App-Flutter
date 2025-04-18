@@ -28,37 +28,67 @@ class NowPlayingPage extends StatefulWidget {
   State<NowPlayingPage> createState() => _NowPlayingPageState();
 }
 
-class _NowPlayingPageState extends State<NowPlayingPage> {
+class _NowPlayingPageState extends State<NowPlayingPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _imageAnimateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageAnimateController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 12000),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // return const Scaffold(
-    //   body: Center(
-    //     child: Text("Now Playing"),
-    //   ),
-    // );
+    final screenWidth = MediaQuery.of(context).size.width;
+    const delta = 64;
+    final radius = (screenWidth - delta) / 2;
+
     return CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
           middle: const Text("Now Playing"),
           trailing:
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
         ),
         child: Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(widget.playingSong.album),
-                  const SizedBox(
-                    height: 16,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(widget.playingSong.album),
+                const SizedBox(
+                  height: 16,
+                ),
+                const Text("_ ___ _"),
+                const SizedBox(
+                  height: 48,
+                ),
+                RotationTransition(
+                  turns: Tween(begin: 0.0, end: 1.0)
+                      .animate(_imageAnimateController),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(radius),
+                    child: FadeInImage.assetNetwork(
+                      placeholder: "assets/itunes_logo.png",
+                      image: widget.playingSong.image,
+                      width: screenWidth - delta,
+                      height: screenWidth - delta,
+                      imageErrorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          "assets/itunes_logo.png",
+                          width: screenWidth - delta,
+                          height: screenWidth - delta,
+                        );
+                      },
+                    ),
                   ),
-                  const Text("_ ___ _"),
-                  const SizedBox(
-                    height: 48,
-                  ),
-                ],
-              ),
+                )
+              ],
             ),
-        )
-    );
+          ),
+        ));
   }
 }
