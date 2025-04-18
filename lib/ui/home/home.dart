@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:music_app/data/model/song.dart';
 import 'package:music_app/ui/discovery/discovery.dart';
 import 'package:music_app/ui/home/view.model.dart';
+import 'package:music_app/ui/now_playing/playing.dart';
 import 'package:music_app/ui/setting/setting.dart';
 import 'package:music_app/ui/user/user.dart';
 
@@ -17,7 +18,8 @@ class MusicApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MusicHomePage(),
+      home: const MusicHomePage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -150,10 +152,44 @@ class _HomeTabPageState extends State<HomeTabPage> {
       });
     });
   }
+
+  void showBottomSheet() {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Container(
+                height: 400,
+                color: Colors.grey,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const Text("Modal Bottom Sheet"),
+                      ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Close Bottom Sheet"))
+                    ],
+                  ),
+                )),
+          );
+        });
+  }
+
+  void navigate(Song song) {
+    Navigator.push(context, CupertinoPageRoute(builder: (context) {
+      return NowPlaying(
+        songs: songs,
+        playingSong: song,
+      );
+    }));
+  }
 }
 
 class _SongItemSection extends StatelessWidget {
-  _SongItemSection({required this.parent, required this.song});
+  const _SongItemSection({required this.parent, required this.song});
 
   final _HomeTabPageState parent;
   final Song song;
@@ -161,10 +197,7 @@ class _SongItemSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.only(
-        left: 24,
-        right: 8
-      ),
+      contentPadding: const EdgeInsets.only(left: 24, right: 8),
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: FadeInImage.assetNetwork(
@@ -183,8 +216,14 @@ class _SongItemSection extends StatelessWidget {
       ),
       title: Text(song.title),
       subtitle: Text(song.artist),
-      trailing:
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
+      trailing: IconButton(
+          onPressed: () {
+            parent.showBottomSheet();
+          },
+          icon: const Icon(Icons.more_horiz)),
+      onTap: () {
+        parent.navigate(song);
+      },
     );
   }
 }
