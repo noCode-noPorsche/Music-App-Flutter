@@ -60,4 +60,5 @@ flutter:
 
   assets:
     - assets/songs.json
+    - assets/itunes_logo.png
 
