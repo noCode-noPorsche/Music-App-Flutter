@@ -12,19 +12,19 @@ class DefaultRepository implements Repository {
   @override
   Future<List<Song>?> loadData() async {
     List<Song> songs = [];
-    await _remoteDataSource.loadData().then((remoteSongs) {
-      if (remoteSongs == null) {
-        _localDataSource.loadData().then((localSongs) {
-          if (localSongs != null) {
-            songs.addAll(localSongs);
-          }
-        });
-      } else {
-        songs.addAll(remoteSongs);
-      }
-    });
-
+    final remoteSongs =
+        await _remoteDataSource.loadData().then((remoteSongs) async => {
+              if (remoteSongs == null)
+                {
+                  await _localDataSource.loadData().then((localSongs) {
+                    if (localSongs != null) {
+                      songs.addAll(localSongs);
+                    }
+                  })
+                }
+              else
+                {songs.addAll(remoteSongs)}
+            });
     return songs;
-    throw UnimplementedError();
   }
 }
