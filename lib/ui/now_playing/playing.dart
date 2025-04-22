@@ -52,8 +52,13 @@ class _NowPlayingPageState extends State<NowPlayingPage>
       vsync: this,
       duration: const Duration(milliseconds: 12000),
     );
-    _audioPlayerManager = AudioPlayerManager(songUrl: _song.source);
-    _audioPlayerManager.init();
+    _audioPlayerManager = AudioPlayerManager();
+    if (_audioPlayerManager.songUrl.compareTo(_song.source) != 0) {
+      _audioPlayerManager.updateSongUrl(_song.source);
+      _audioPlayerManager.prepare(isNewSong: true);
+    } else {
+      _audioPlayerManager.prepare(isNewSong: false);
+    }
     _selectedItemIndex = widget.songs.indexOf(widget.playingSong);
     _loopMode = LoopMode.off;
   }
@@ -168,7 +173,6 @@ class _NowPlayingPageState extends State<NowPlayingPage>
 
   @override
   void dispose() {
-    _audioPlayerManager.dispose();
     _imageAnimateController.dispose();
     super.dispose();
   }
