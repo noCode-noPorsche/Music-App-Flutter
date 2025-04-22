@@ -37,11 +37,13 @@ class _NowPlayingPageState extends State<NowPlayingPage>
   late AudioPlayerManager _audioPlayerManager;
   late int _selectedItemIndex;
   late Song _song;
+  late double _currentAnimationPosition;
 
   @override
   void initState() {
     super.initState();
     _song = widget.playingSong;
+    _currentAnimationPosition = 0.0;
     _imageAnimateController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 12000),
@@ -53,10 +55,7 @@ class _NowPlayingPageState extends State<NowPlayingPage>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
+    final screenWidth = MediaQuery.of(context).size.width;
     const delta = 64;
     final radius = (screenWidth - delta) / 2;
 
@@ -64,108 +63,98 @@ class _NowPlayingPageState extends State<NowPlayingPage>
         navigationBar: CupertinoNavigationBar(
           middle: const Text("Now Playing"),
           trailing:
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
         ),
         child: Scaffold(
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(widget.playingSong.album),
-              const SizedBox(
-                height: 16,
-              ),
-              const Text("_ ___ _"),
-              const SizedBox(
-                height: 48,
-              ),
-              RotationTransition(
-                turns: Tween(begin: 0.0, end: 1.0)
-                    .animate(_imageAnimateController),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(radius),
-                  child: FadeInImage.assetNetwork(
-                    placeholder: "assets/itunes_logo.png",
-                    image: widget.playingSong.image,
-                    width: screenWidth - delta,
-                    height: screenWidth - delta,
-                    imageErrorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        "assets/itunes_logo.png",
-                        width: screenWidth - delta,
-                        height: screenWidth - delta,
-                      );
-                    },
+                Text(_song.album),
+                const SizedBox(
+                  height: 16,
+                ),
+                const Text("_ ___ _"),
+                const SizedBox(
+                  height: 48,
+                ),
+                RotationTransition(
+                  turns: Tween(begin: 0.0, end: 1.0)
+                      .animate(_imageAnimateController),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(radius),
+                    child: FadeInImage.assetNetwork(
+                      placeholder: "assets/itunes_logo.png",
+                      image: _song.image,
+                      width: screenWidth - delta,
+                      height: screenWidth - delta,
+                      imageErrorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          "assets/itunes_logo.png",
+                          width: screenWidth - delta,
+                          height: screenWidth - delta,
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 64, bottom: 16),
-                child: SizedBox(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.share_outlined),
-                        color: Theme
-                            .of(context)
-                            .colorScheme
-                            .primary,
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            widget.playingSong.title,
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                color: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color),
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Text(
-                            widget.playingSong.artist,
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                color: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color),
-                          )
-                        ],
-                      ),
-                      IconButton(
+                Padding(
+                  padding: const EdgeInsets.only(top: 64, bottom: 16),
+                  child: SizedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        IconButton(
                           onPressed: () {},
-                          icon: const Icon(Icons.favorite_outline),
-                          color: Theme
-                              .of(context)
-                              .colorScheme
-                              .primary)
-                    ],
+                          icon: const Icon(Icons.share_outlined),
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              _song.title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!
+                                          .color),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              _song.artist,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!
+                                          .color),
+                            )
+                          ],
+                        ),
+                        IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.favorite_outline),
+                            color: Theme.of(context).colorScheme.primary)
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 32, right: 24, left: 24, bottom: 16),
-                child: _progressBar(),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 24, left: 24),
-                child: _mediaButtons(),
-              ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 32, right: 24, left: 24, bottom: 16),
+                  child: _progressBar(),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 24, left: 24),
+                  child: _mediaButtons(),
+                ),
               ],
             ),
           ),
@@ -175,6 +164,7 @@ class _NowPlayingPageState extends State<NowPlayingPage>
   @override
   void dispose() {
     _audioPlayerManager.dispose();
+    _imageAnimateController.dispose();
     super.dispose();
   }
 
@@ -253,6 +243,9 @@ class _NowPlayingPageState extends State<NowPlayingPage>
             return MediaButtonControl(
                 function: () {
                   _audioPlayerManager.player.play();
+                  _imageAnimateController.forward(
+                      from: _currentAnimationPosition);
+                  _imageAnimateController.repeat();
                 },
                 icon: Icons.play_arrow,
                 color: null,
@@ -261,13 +254,23 @@ class _NowPlayingPageState extends State<NowPlayingPage>
             return MediaButtonControl(
                 function: () {
                   _audioPlayerManager.player.pause();
+                  _imageAnimateController.stop();
+                  _currentAnimationPosition = _imageAnimateController.value;
                 },
                 icon: Icons.pause,
                 color: null,
                 size: 48);
           } else {
+            if (processingState == ProcessingState.completed) {
+              _imageAnimateController.stop();
+              _currentAnimationPosition = 0.0;
+            }
             return MediaButtonControl(
                 function: () {
+                  _currentAnimationPosition = 0.0;
+                  _imageAnimateController.forward(
+                      from: _currentAnimationPosition);
+                  _imageAnimateController.repeat();
                   _audioPlayerManager.player.seek(Duration.zero);
                 },
                 icon: Icons.replay,
@@ -281,6 +284,9 @@ class _NowPlayingPageState extends State<NowPlayingPage>
     ++_selectedItemIndex;
     final nextSong = widget.songs[_selectedItemIndex];
     _audioPlayerManager.updateSongUrl(nextSong.source);
+    _currentAnimationPosition = 0.0;
+    _imageAnimateController.forward(
+        from: _currentAnimationPosition);
     setState(() {
       _song = nextSong;
     });
@@ -290,6 +296,9 @@ class _NowPlayingPageState extends State<NowPlayingPage>
     --_selectedItemIndex;
     final nextSong = widget.songs[_selectedItemIndex];
     _audioPlayerManager.updateSongUrl(nextSong.source);
+    _currentAnimationPosition = 0.0;
+    _imageAnimateController.forward(
+        from: _currentAnimationPosition);
     setState(() {
       _song = nextSong;
     });
@@ -323,10 +332,7 @@ class _MediaButtonControlState extends State<MediaButtonControl> {
       onPressed: widget.function,
       icon: Icon(widget.icon),
       iconSize: widget.size,
-      color: widget.color ?? Theme
-          .of(context)
-          .colorScheme
-          .primary,
+      color: widget.color ?? Theme.of(context).colorScheme.primary,
     );
   }
 }
