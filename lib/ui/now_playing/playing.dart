@@ -233,6 +233,7 @@ class _NowPlayingPageState extends State<NowPlayingPage>
           final playing = playState?.playing;
           if (processingState == ProcessingState.loading ||
               processingState == ProcessingState.buffering) {
+            _pauseRotationAnimation();
             return Container(
               margin: const EdgeInsets.all(8),
               width: 48,
@@ -243,34 +244,30 @@ class _NowPlayingPageState extends State<NowPlayingPage>
             return MediaButtonControl(
                 function: () {
                   _audioPlayerManager.player.play();
-                  _imageAnimateController.forward(
-                      from: _currentAnimationPosition);
-                  _imageAnimateController.repeat();
+
                 },
                 icon: Icons.play_arrow,
                 color: null,
                 size: 48);
           } else if (processingState != ProcessingState.completed) {
+            _playRotationAnimation();
             return MediaButtonControl(
                 function: () {
                   _audioPlayerManager.player.pause();
-                  _imageAnimateController.stop();
-                  _currentAnimationPosition = _imageAnimateController.value;
+                  _pauseRotationAnimation();
                 },
                 icon: Icons.pause,
                 color: null,
                 size: 48);
           } else {
             if (processingState == ProcessingState.completed) {
-              _imageAnimateController.stop();
-              _currentAnimationPosition = 0.0;
+              _stopRotationAnimation();
+              _resetRotationAnimation();
             }
             return MediaButtonControl(
                 function: () {
-                  _currentAnimationPosition = 0.0;
-                  _imageAnimateController.forward(
-                      from: _currentAnimationPosition);
-                  _imageAnimateController.repeat();
+                 _resetRotationAnimation();
+                 _playRotationAnimation();
                   _audioPlayerManager.player.seek(Duration.zero);
                 },
                 icon: Icons.replay,
@@ -284,9 +281,7 @@ class _NowPlayingPageState extends State<NowPlayingPage>
     ++_selectedItemIndex;
     final nextSong = widget.songs[_selectedItemIndex];
     _audioPlayerManager.updateSongUrl(nextSong.source);
-    _currentAnimationPosition = 0.0;
-    _imageAnimateController.forward(
-        from: _currentAnimationPosition);
+    _resetRotationAnimation();
     setState(() {
       _song = nextSong;
     });
@@ -296,12 +291,29 @@ class _NowPlayingPageState extends State<NowPlayingPage>
     --_selectedItemIndex;
     final nextSong = widget.songs[_selectedItemIndex];
     _audioPlayerManager.updateSongUrl(nextSong.source);
-    _currentAnimationPosition = 0.0;
-    _imageAnimateController.forward(
-        from: _currentAnimationPosition);
+    _resetRotationAnimation();
     setState(() {
       _song = nextSong;
     });
+  }
+
+  void _playRotationAnimation() {
+    _imageAnimateController.forward(from: _currentAnimationPosition);
+    _imageAnimateController.repeat();
+  }
+
+  void _pauseRotationAnimation() {
+    _stopRotationAnimation();
+    _currentAnimationPosition = _imageAnimateController.value;
+  }
+
+  void _stopRotationAnimation() {
+    _imageAnimateController.stop();
+  }
+
+  void _resetRotationAnimation() {
+    _currentAnimationPosition = 0.0;
+    _imageAnimateController.value = _currentAnimationPosition;
   }
 }
 
